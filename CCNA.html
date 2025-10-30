@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCNA Practice Quiz</title>
+    <style>
+        /* --- Basic Setup --- */
+        :root {
+            --bg-color: #f4f7f6;
+            --container-bg: #ffffff;
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --text-color: #333;
+            --border-color: #ddd;
+            --correct-color: #28a745;
+            --incorrect-color: #dc3545;
+            --explanation-bg: #f9f9f9;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* --- Main Container --- */
+        .quiz-wrapper {
+            display: flex;
+            gap: 30px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        /* --- Category Filters --- */
+        .filter-container {
+            flex-basis: 250px;
+            flex-shrink: 0;
+            background: var(--container-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            height: fit-content;
+        }
+
+        .filter-container h3 {
+            margin-top: 0;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .filter-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .filter-list li {
+            margin-bottom: 12px;
+        }
+
+        .filter-list label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .filter-list input[type="checkbox"] {
+            margin-right: 10px;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+
+        /* --- Quiz Container --- */
+        .quiz-container {
+            flex-grow: 1;
+            background: var(--container-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        #question-text {
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: 25px;
+            min-height: 50px;
+        }
+
+        /* --- Answer Options --- */
+        #answer-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .answer-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            font-size: 1rem;
+            text-align: left;
+            background-color: #f9f9f9;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .answer-btn:not(:disabled):hover {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        .answer-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .answer-btn.selected {
+            border-width: 2px;
+        }
+
+        /* --- Feedback --- */
+        #feedback {
+            font-size: 1.05rem; /* Slightly smaller to fit more text */
+            font-weight: 500;
+            min-height: 25px;
+            margin-top: 10px;
+            padding: 15px;
+            border-radius: 5px;
+            line-height: 1.6;
+        }
+        
+        #feedback:empty {
+            padding: 0; /* Hide padding when empty */
+            margin-top: 0;
+        }
+
+        .correct {
+            color: #155724; /* Darker green text */
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+
+        .incorrect {
+            color: #721c24; /* Darker red text */
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        
+        #feedback strong {
+             color: var(--text-color);
+        }
+
+        /* Style correct/incorrect buttons after choice */
+        .answer-btn.correct-choice {
+            background-color: #e9f7ea;
+            border-color: var(--correct-color);
+            color: var(--correct-color);
+            font-weight: bold;
+        }
+
+        .answer-btn.incorrect-choice {
+            background-color: #fbebee;
+            border-color: var(--incorrect-color);
+            color: var(--incorrect-color);
+            opacity: 1; 
+        }
+
+        /* --- Next Button --- */
+        #next-btn {
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 12px 25px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px; /* Added margin-top */
+            align-self: flex-end;
+            transition: background-color 0.2s ease;
+            display: none; 
+        }
+
+        #next-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 768px) {
+            .quiz-wrapper {
+                flex-direction: column;
+            }
+
+            .filter-container {
+                flex-basis: auto;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .quiz-container {
+                width: 100%;
+                box-sizing: border-box;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-wrapper">
+        <aside class="filter-container">
+            <h3>Categories</h3>
+            <ul id="category-filters" class="filter-list">
+                </ul>
+        </aside>
+
+        <main class="quiz-container">
+            <h1>CCNA Practice Quiz</h1>
+
+            <div id="quiz-content">
+                <p id="question-text">Loading your question...</p>
+
+                <div id="answer-options">
+                    </div>
+
+                <div id="feedback"></div> <button id="next-btn">Next Question</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ====================================================================
+        // === QUESTION DATABASE
+        // ====================================================================
+        // To add more questions, just add a new object to this array.
+        // ** NEW: Added an 'explanation' field to each object.
+        // ====================================================================
+
+        const questionDatabase = [
+            {
+                category: "OSI Model",
+                question: "Which layer of the OSI model is responsible for routing and logical addressing?",
+                options: ["Layer 1 (Physical)", "Layer 2 (Data Link)", "Layer 3 (Network)", "Layer 4 (Transport)"],
+                answer: "Layer 3 (Network)",
+                explanation: "Layer 3 (Network Layer) is responsible for logical addressing (IP addresses) and path determination (routing) to move packets between different networks."
+            },
+            {
+                category: "OSI Model",
+                question: "A switch primarily operates at which layer of the OSI model?",
+                options: ["Layer 1 (Physical)", "Layer 2 (Data Link)", "Layer 3 (Network)", "Layer 4 (Transport)"],
+                answer: "Layer 2 (Data Link)",
+                explanation: "Switches operate at Layer 2 (Data Link Layer). They use MAC addresses to make forwarding decisions within a single network (LAN)."
+            },
+            {
+                category: "Subnetting",
+                question: "What is the subnet mask for a /24 prefix?",
+                options: ["255.0.0.0", "255.255.0.0", "255.255.255.0", "255.255.255.255"],
+                answer: "255.255.255.0",
+                explanation: "A /24 prefix means 24 bits are used for the network portion. In binary, this is 24 ones (11111111.11111111.11111111.00000000), which translates to 255.255.255.0 in decimal."
+            },
+            {
+                category: "Subnetting",
+                question: "How many usable host addresses are in a /28 subnet?",
+                options: ["14", "16", "30", "62"],
+                answer: "14",
+                explanation: "A /28 prefix leaves 4 bits for the host portion (32 - 28 = 4). The total number of addresses is 2^4 = 16. You must subtract 2 (one for the network address and one for the broadcast address), leaving 14 usable host addresses."
+            },
+            {
+                category: "Routing Protocols",
+                question: "Which routing protocol is a link-state protocol?",
+                options: ["RIPv2", "EIGRP", "OSPF", "BGP"],
+                answer: "OSPF",
+                explanation: "OSPF (Open Shortest Path First) is a link-state protocol. Link-state protocols build a complete map (topology) of the network before calculating the shortest path. RIP is distance-vector, and EIGRP is an advanced distance-vector (or hybrid) protocol."
+            },
+            {
+                category: "Routing Protocols",
+                question: "What is the default Administrative Distance (AD) of OSPF?",
+                options: ["90", "100", "110", "120"],
+                answer: "110",
+                explanation: "Administrative Distance (AD) is the 'trustworthiness' of a route source. OSPF has a default AD of 110. EIGRP (internal) is 90, and RIP is 120."
+            },
+            {
+                category: "Spanning Tree (STP)",
+                question: "What is the purpose of Spanning Tree Protocol (STP)?",
+                options: ["To prevent routing loops", "To prevent Layer 2 switching loops", "To assign IP addresses", "To encrypt data"],
+                answer: "To prevent Layer 2 switching loops",
+                explanation: "STP (802.1D) prevents switching loops (broadcast storms) in redundant Layer 2 topologies by logically blocking redundant paths. Routing loops are a Layer 3 problem."
+            },
+            {
+                category: "OSI Model",
+                question: "At which layer of the OSI model do you find HTTP, FTP, and SMTP protocols?",
+                options: ["Presentation", "Session", "Application", "Transport"],
+                answer: "Application",
+                explanation: "The Application Layer (Layer 7) provides the interface for network services to applications. Protocols like HTTP (web), FTP (file transfer), and SMTP (email) operate here."
+            },
+            {
+                category: "OSI Model",
+                question: "Which layer is responsible for framing and physical addressing (MAC addresses)?",
+                options: ["Physical", "Data Link", "Network", "Transport"],
+                answer: "Data Link",
+                explanation: "The Data Link Layer (Layer 2) is responsible for node-to-node delivery, framing, error detection, and physical addressing using MAC addresses."
+            },
+            {
+                category: "OSI Model",
+                question: "Encryption and decryption of data are primary functions of which OSI layer?",
+                options: ["Application", "Presentation", "Session", "Transport"],
+                answer: "Presentation",
+                explanation: "The Presentation Layer (Layer 6) is responsible for translating, encrypting, and compressing data to ensure it is in a usable format for the Application layer."
+            },
+            {
+                category: "Subnetting",
+                question: "What is the first usable IP address in the subnet 192.168.10.32/28?",
+                options: ["192.168.10.32", "192.168.10.33", "192.168.10.47", "192.168.10.1"],
+                answer: "192.168.10.33",
+                explanation: "In the subnet 192.168.10.32/28, the network address is 192.168.10.32. The first usable host address is always the next one, which is 192.168.10.33."
+            },
+            {
+                category: "Subnetting",
+                question: "You need at least 50 hosts per subnet. What is the most efficient subnet mask to use?",
+                options: ["/25", "/26", "/27", "/28"],
+                answer: "/26",
+                explanation: "A /26 mask (255.255.255.192) provides 2^6 = 64 total addresses. Subtracting 2 for network and broadcast addresses gives 62 usable hosts, which is the smallest subnet that meets the requirement of 50 hosts."
+            },
+            {
+                category: "Subnetting",
+                question: "Which of the following is a valid CIDR notation for a subnet with 2 usable host addresses?",
+                options: ["/29", "/30", "/31", "/32"],
+                answer: "/30",
+                explanation: "A /30 subnet provides 2^2 = 4 total addresses. After subtracting the network and broadcast addresses, 2 addresses remain for hosts. /31 is used for point-to-point links with special rules, and /32 is a single host address."
+            },
+            {
+                category: "Routing Protocols",
+                question: "Which of the following is an Exterior Gateway Protocol (EGP)?",
+                options: ["OSPF", "EIGRP", "RIP", "BGP"],
+                answer: "BGP",
+                explanation: "BGP (Border Gateway Protocol) is the primary Exterior Gateway Protocol (EGP) used to route traffic between different autonomous systems on the internet. OSPF, EIGRP, and RIP are Interior Gateway Protocols (IGPs)."
+            },
+            {
+                category: "Routing Protocols",
+                question: "Which EIGRP packet type is used to discover neighbors?",
+                options: ["Update", "Query", "Hello", "Acknowledgment"],
+                answer: "Hello",
+                explanation: "EIGRP uses Hello packets to dynamically discover neighbors directly connected to it. Once discovered, EIGRP forms a neighbor relationship (adjacency) with that router."
+            },
+            {
+                category: "Routing Protocols",
+                question: "What metric does OSPF use by default to determine the best path?",
+                options: ["Hop Count", "Bandwidth", "Cost", "Delay"],
+                answer: "Cost",
+                explanation: "OSPF uses a metric called 'Cost' by default, which is calculated based on the bandwidth of the interface. The formula is Reference Bandwidth / Interface Bandwidth."
+            },
+            {
+                category: "Spanning Tree (STP)",
+                question: "What is the default STP priority for a Cisco switch?",
+                options: ["0", "32768", "65535", "1"],
+                answer: "32768",
+                explanation: "The default Bridge Priority value for a Cisco switch is 32768. This value, combined with the switch's base MAC address, is used in the Root Bridge election process."
+            },
+            {
+                category: "Spanning Tree (STP)",
+                question: "Which STP port state is temporary and listens for BPDUs before transitioning to the learning state?",
+                options: ["Blocking", "Listening", "Learning", "Forwarding"],
+                answer: "Listening",
+                explanation: "After the Blocking state, a port transitions to the Listening state. In this state, it listens for BPDUs to ensure no loops would be created if it started forwarding data. It does not learn MAC addresses yet."
+            },
+            {
+                category: "VLANs & Trunking",
+                question: "Which protocol is used to negotiate a trunk link between two Cisco switches?",
+                options: ["STP", "VTP", "DTP", "CDP"],
+                answer: "DTP",
+                explanation: "DTP (Dynamic Trunking Protocol) is a Cisco proprietary protocol that negotiates whether a link between two switches becomes an access port or a trunk port."
+            },
+            {
+                category: "VLANs & Trunking",
+                question: "What is the purpose of the Native VLAN on a trunk?",
+                options: ["To carry management traffic by default", "To carry untagged traffic", "To have a higher priority", "To be the default VLAN 1"],
+                answer: "To carry untagged traffic",
+                explanation: "The Native VLAN is assigned to untagged traffic that arrives on a trunk port. For traffic to be forwarded correctly, the Native VLAN must match on both sides of the trunk link."
+            },
+            {
+                category: "VLANs & Trunking",
+                question: "What is the purpose of VTP (VLAN Trunking Protocol)?",
+                options: ["To route between VLANs", "To prevent switching loops", "To synchronize VLAN information across switches", "To assign IP addresses to VLANs"],
+                answer: "To synchronize VLAN information across switches",
+                explanation: "VTP manages the addition, deletion, and renaming of VLANs across a switched network from a central point, propagating this information to all other switches in the VTP domain."
+            },
+            {
+                category: "IP Services",
+                question: "What is the primary purpose of DHCP?",
+                options: ["To resolve IP addresses to hostnames", "To automatically assign IP configuration to hosts", "To discover neighboring devices", "To route traffic between networks"],
+                answer: "To automatically assign IP configuration to hosts",
+                explanation: "DHCP (Dynamic Host Configuration Protocol) automatically provides IP hosts with their IP address, subnet mask, default gateway, and other necessary configuration parameters."
+            },
+            {
+                category: "IP Services",
+                question: "Which port number does DNS use?",
+                options: ["TCP 23", "UDP 53", "TCP 80", "UDP 161"],
+                answer: "UDP 53",
+                explanation: "DNS (Domain Name System) primarily uses UDP port 53 for name resolution queries. It uses TCP port 53 for zone transfers between DNS servers."
+            },
+            {
+                category: "IP Services",
+                question: "What is the function of NAT?",
+                options: ["To encrypt private data", "To translate between private and public IP addresses", "To prevent MAC address flooding", "To establish a VPN tunnel"],
+                answer: "To translate between private and public IP addresses",
+                explanation: "NAT (Network Address Translation) translates private (RFC 1918) IP addresses into a public IP address, allowing internal networks to communicate with the internet using a single or a pool of public IPs."
+            },
+            {
+                category: "Security",
+                question: "Which command will encrypt all plaintext passwords in a router's configuration?",
+                options: ["enable secret", "service password-encryption", "username secret", "crypto key generate rsa"],
+                answer: "service password-encryption",
+                explanation: "The global configuration command 'service password-encryption' applies a weak encryption cipher to all plaintext passwords in the configuration, like those set with the 'password' command."
+            },
+            {
+                category: "Security",
+                question: "A standard ACL filters traffic based on what?",
+                options: ["Source IP address only", "Destination IP address only", "Both source and destination IP", "Source and destination port numbers"],
+                answer: "Source IP address only",
+                explanation: "Standard Numbered ACLs (1-99, 1300-1999) filter traffic based on the source IP address only. They are less granular than Extended ACLs, which can filter on source/destination IP, protocol, and port numbers."
+            },
+            {
+                category: "Security",
+                question: "Where is the most efficient placement for a standard ACL?",
+                options: ["As close to the source as possible", "As close to the destination as possible", "On any interface", "Only on the outbound interface"],
+                answer: "As close to the destination as possible",
+                explanation: "Because Standard ACLs only filter based on source IP, placing them too close to the source can unintentionally block all traffic from that source. Placing them close to the destination allows for more specific control."
+            },
+            {
+                category: "Wireless",
+                question: "Which wireless standard operates in the 5 GHz band and has a maximum theoretical data rate of 54 Mbps?",
+                options: ["802.11a", "802.11b", "802.11g", "802.11n"],
+                answer: "802.11a",
+                explanation: "802.11a operates in the less crowded 5 GHz band with a maximum data rate of 54 Mbps. 802.11b/g operate in the 2.4 GHz band, and 802.11n operates in both."
+            },
+            {
+                category: "Wireless",
+                question: "What is the name of the central point of connection in a wireless infrastructure mode network?",
+                options: ["Wireless Router", "Access Point", "Wireless Bridge", "SSID"],
+                answer: "Access Point",
+                explanation: "An Access Point (AP) acts as the central connection point for wireless clients in infrastructure mode, bridging the wireless and wired networks. A wireless router contains an AP, a router, and often a switch."
+            },
+            {
+                category: "IPv6",
+                question: "What is the length of an IPv6 address in bits?",
+                options: ["32 bits", "64 bits", "128 bits", "256 bits"],
+                answer: "128 bits",
+                explanation: "An IPv6 address is 128 bits long, which is four times the length of a 32-bit IPv4 address. This massive address space was designed to solve IPv4 address exhaustion."
+            },
+            {
+                category: "IPv6",
+                question: "Which IPv6 address type is equivalent to a public IPv4 address and globally routable?",
+                options: ["Link-local", "Unique Local", "Global Unicast", "Multicast"],
+                answer: "Global Unicast",
+                explanation: "Global Unicast Addresses (GUA) in IPv6 (prefix 2000::/3) are the equivalent of public IPv4 addresses. They are globally unique and routable on the internet."
+            },
+            {
+                category: "IPv6",
+                question: "What is the prefix for an IPv6 Link-local address?",
+                options: ["2001::/3", "FE80::/10", "FC00::/7", "FF00::/8"],
+                answer: "FE80::/10",
+                explanation: "Link-local addresses in IPv6 always begin with 'FE80::/10'. These addresses are only valid and used for communication on the same local network segment (link) and are not routable."
+            },
+            {
+                category: "Troubleshooting",
+                question: "What does a '.' indicate when using the ping command?",
+                options: ["A successful reply", "A request timed out", "Destination unreachable", "Unknown host"],
+                answer: "A request timed out",
+                explanation: "When using the ping command, a period ('.') typically indicates that the echo request was sent but no reply (echo reply) was received before the timeout period expired."
+            },
+            {
+                category: "Troubleshooting",
+                question: "Which command shows the path packets take to a destination?",
+                options: ["ping", "tracert / traceroute", "show ip route", "show cdp neighbors"],
+                answer: "tracert / traceroute",
+                explanation: "The 'traceroute' (on Cisco devices) or 'tracert' (on Windows) command is used to discover the path packets take to reach a destination, showing each hop (router) along the way."
+            },
+            {
+                category: "Troubleshooting",
+                question: "If a switchport is in the 'err-disabled' state, what likely caused it?",
+                options: ["STP loop", "Port security violation", "Wrong VLAN assignment", "Speed/duplex mismatch"],
+                answer: "Port security violation",
+                explanation: "The most common cause of an 'err-disabled' state is a port security violation, such as a device with an unauthorized MAC address connecting to a secured port. Other causes can include BPDU Guard or UDLD failures."
+            },
+            {
+                category: "Cisco IOS",
+                question: "Which command is used to enter the global configuration mode?",
+                options: ["enable", "configure terminal", "setup", "interface fastethernet 0/1"],
+                answer: "configure terminal",
+                explanation: "From Privileged EXEC mode (#), the command 'configure terminal' (or 'conf t') is used to enter Global Configuration mode, where changes that affect the whole device are made."
+            },
+            {
+                category: "Cisco IOS",
+                question: "What command saves the current running-config to the startup-config?",
+                options: ["copy run start", "write memory", "reload", "Both A and B"],
+                answer: "Both A and B",
+                explanation: "Both 'copy running-config startup-config' (copy run start) and the older command 'write memory' (wr) will save the current configuration in RAM to the non-volatile NVRAM, making it the boot configuration."
+            },
+            {
+                category: "Network Fundamentals",
+                question: "What is the primary difference between a hub and a switch?",
+                options: ["A hub operates at Layer 1, a switch at Layer 2", "A hub has more ports", "A switch is faster", "A hub uses MAC addresses"],
+                answer: "A hub operates at Layer 1, a switch at Layer 2",
+                explanation: "A hub is a Layer 1 device that simply repeats electrical signals to all ports, creating a single collision domain. A switch is an intelligent Layer 2 device that forwards frames based on MAC addresses, creating separate collision domains per port."
+            },
+            {
+                category: "Network Fundamentals",
+                question: "Which cable type is used to connect a host directly to a switch?",
+                options: ["Crossover cable", "Rollover cable", "Console cable", "Straight-through cable"],
+                answer: "Straight-through cable",
+                explanation: "A straight-through cable is used to connect dissimilar devices, such as a host to a switch or a router to a switch. Crossover cables are used to connect similar devices (switch-to-switch, host-to-host)."
+            },
+            {
+                category: "EIGRP",
+                question: "What two metrics are used by default in EIGRP's composite metric calculation?",
+                options: ["Bandwidth and Load", "Bandwidth and Delay", "Reliability and MTU", "Load and Delay"],
+                answer: "Bandwidth and Delay",
+                explanation: "By default, EIGRP uses only Bandwidth (the slowest link in the path) and Delay (the cumulative interface delay) to calculate its composite metric for best path selection. Reliability, Load, and MTU can be configured but are not used by default."
+            },
+            {
+                category: "OSPF",
+                question: "What is the default OSPF cost for a 100 Mbps FastEthernet interface?",
+                options: ["1", "10", "100", "1000"],
+                answer: "1",
+                explanation: "The OSPF cost is calculated as Reference Bandwidth / Interface Bandwidth. The default Reference Bandwidth is 100 Mbps. Therefore, for a 100 Mbps interface, the cost is 100 / 100 = 1."
+            },
+            {
+                category: "NAT",
+                question: "Which type of NAT maps one private IP address to one public IP address?",
+                options: ["Static NAT", "Dynamic NAT", "PAT", "NAT Overload"],
+                answer: "Static NAT",
+                explanation: "Static NAT creates a one-to-one mapping between a specific private IP address and a specific public IP address. This is often used for servers that need to be accessible from the internet."
+            },
+            {
+                category: "NAT",
+                question: "What is the most common form of NAT used in home routers, which maps many private IPs to one public IP using ports?",
+                options: ["Static NAT", "Dynamic NAT", "PAT (NAT Overload)", "Dynamic PAT"],
+                answer: "PAT (NAT Overload)",
+                explanation: "PAT (Port Address Translation), also known as NAT Overload, is the most common form. It uses a single public IP address and differentiates between internal connections by using unique source port numbers."
+            },
+            {
+                category: "WAN",
+                question: "Which WAN technology uses virtual circuits and is identified by a DLCI?",
+                options: ["PPP", "Frame Relay", "MPLS", "Ethernet"],
+                answer: "Frame Relay",
+                explanation: "Frame Relay is a packet-switched WAN technology that uses Virtual Circuits (PVCs) to create logical paths through the network. These circuits are identified by a Data-Link Connection Identifier (DLCI)."
+            },
+            {
+                category: "Network Fundamentals",
+                question: "What protocol is used by a device to resolve an IP address to a MAC address on the local network?",
+                options: ["DNS", "DHCP", "ARP", "RARP"],
+                answer: "ARP",
+                explanation: "The Address Resolution Protocol (ARP) is used to discover the Layer 2 (MAC) address associated with a known Layer 3 (IP) address on the same local network segment."
+            },
+            {
+                category: "Network Fundamentals",
+                question: "Which of the following is a connection-oriented transport layer protocol?",
+                options: ["UDP", "HTTP", "TCP", "ICMP"],
+                answer: "TCP",
+                explanation: "TCP (Transmission Control Protocol) is a connection-oriented protocol at the Transport Layer (Layer 4). It establishes a session with a three-way handshake and provides reliable, ordered data delivery."
+            },
+            {
+                category: "IP Addressing",
+                question: "Which address range is NOT a valid private IP address range per RFC 1918?",
+                options: ["10.0.0.0 - 10.255.255.255", "172.16.0.0 - 172.31.255.255", "192.168.0.0 - 192.168.255.255", "169.254.0.0 - 169.254.255.255"],
+                answer: "169.254.0.0 - 169.254.255.255",
+                explanation: "The 169.254.0.0/16 range is used for APIPA (Automatic Private IP Addressing), which is a fail-safe mechanism when a client cannot get an address from a DHCP server. It is not one of the officially designated RFC 1918 private ranges."
+            },
+            {
+                category: "IP Addressing",
+                question: "What is the network address for a host with the IP address 192.168.50.77/28?",
+                options: ["192.168.50.0", "192.168.50.64", "192.168.50.80", "192.168.50.76"],
+                answer: "192.168.50.64",
+                explanation: "A /28 mask has a block size of 16 in the fourth octet. The subnets are 0, 16, 32, 48, 64, 80... The host 192.168.50.77 falls in the 192.168.50.64 - 192.168.50.79 range, making 192.168.50.64 the network address."
+            },
+            {
+                category: "Switching",
+                question: "What is the primary purpose of the 'switchport port-security' command?",
+                options: ["To encrypt traffic on the port", "To prevent unauthorized devices from connecting", "To increase the port speed", "To assign a VLAN to the port"],
+                answer: "To prevent unauthorized devices from connecting",
+                explanation: "Port security is used to restrict the MAC addresses that can send traffic on a switch port, preventing unauthorized devices from connecting to the network."
+            },
+            {
+                category: "Switching",
+                question: "Which command will show the MAC address table on a Cisco switch?",
+                options: ["show mac-address-table", "show mac address-table", "show mac table", "show mac-addresses"],
+                answer: "show mac address-table",
+                explanation: "The correct command on most modern Cisco IOS switches is 'show mac address-table'. This displays the table that maps MAC addresses to the switch ports on which they were learned."
+            },
+            {
+                category: "Switching",
+                question: "What is the default behavior of a switch when it receives a frame with an unknown destination MAC address?",
+                options: ["It drops the frame", "It sends the frame to the default gateway", "It floods the frame out all ports except the one it was received on", "It sends an ARP request"],
+                answer: "It floods the frame out all ports except the one it was received on",
+                explanation: "When a switch doesn't know which port a destination MAC address is on, it will flood the frame out of all active ports within the same VLAN (except the port it was received on) to ensure delivery."
+            },
+            {
+                category: "Routing",
+                question: "What is a characteristic of a static route?",
+                options: ["Automatically adapts to network topology changes", "Requires less administrative overhead than dynamic routing", "Is manually configured by an administrator", "Uses more bandwidth than dynamic routing"],
+                answer: "Is manually configured by an administrator",
+                explanation: "A static route is explicitly configured by a network administrator and does not change unless the administrator manually modifies it. It does not automatically adapt to network failures."
+            },
+            {
+                category: "Routing",
+                question: "What command is used to configure a default static route on a Cisco router?",
+                options: ["ip route 0.0.0.0 0.0.0.0 [next-hop]", "ip route 255.255.255.255 255.255.255.255 [next-hop]", "ip default-network [next-hop]", "ip route default [next-hop]"],
+                answer: "ip route 0.0.0.0 0.0.0.0 [next-hop]",
+                explanation: "The command 'ip route 0.0.0.0 0.0.0.0 [next-hop-ip or exit-interface]' is used to configure a default static route, which is a catch-all for any destination not found in the routing table."
+            },
+            {
+                category: "EIGRP",
+                question: "What is the name of the table where EIGRP stores all routes learned from its neighbors?",
+                options: ["Neighbor Table", "Topology Table", "Routing Table", "ARP Table"],
+                answer: "Topology Table",
+                explanation: "EIGRP's Topology Table contains all routes advertised by neighboring routers. The best routes from this table (the Successors) are then placed into the Routing Table for use in packet forwarding."
+            },
+            {
+                category: "OSPF",
+                question: "What must match for two OSPF routers to become adjacent neighbors? (Choose the most critical).",
+                options: ["Router ID", "Area ID", "Hello and Dead Intervals", "All of the above"],
+                answer: "All of the above",
+                explanation: "For OSPF routers to form a neighbor adjacency, several parameters must match, including Area ID, Hello/Dead Intervals, Network Mask (on broadcast networks), and Authentication. A mismatched Router ID does not prevent adjacency but is crucial for DR/BDR election and LSA identification."
+            },
+            {
+                category: "OSPF",
+                question: "What OSPF router type generates a Type 2 LSA?",
+                options: ["ABR", "ASBR", "DR", "Internal Router"],
+                answer: "DR",
+                explanation: "The Designated Router (DR) in an OSPF multi-access network generates a Type 2 LSA (Network LSA). This LSA describes all routers attached to the multi-access segment, reducing the number of adjacencies required."
+            },
+            {
+                category: "ACLs",
+                question: "What is the number range for an extended IP ACL?",
+                options: ["1-99", "100-199", "500-599", "800-899"],
+                answer: "100-199",
+                explanation: "Extended IP ACLs use the number range 100-199 (and 2000-2699 for expanded range). They can filter traffic based on source/destination IP, protocol (IP, TCP, UDP, ICMP), and source/destination port numbers."
+            },
+            {
+                category: "ACLs",
+                question: "What is the default action at the end of every IPv4 ACL?",
+                options: ["permit any", "deny any", "permit ip any any", "deny ip any any"],
+                answer: "deny ip any any",
+                explanation: "There is an implicit 'deny any' or 'deny ip any any' at the end of every IPv4 ACL. If a packet does not match any of the explicit statements in the ACL, it will be denied by this implicit rule."
+            },
+            {
+                category: "NAT",
+                question: "Inside Global address refers to what?",
+                options: ["The configured private IP address of an inside host", "The registered public IP address that represents an inside host to the outside world", "The IP address of the inside interface of the NAT router", "The IP address of an outside host"],
+                answer: "The registered public IP address that represents an inside host to the outside world",
+                explanation: "NAT Terminology: Inside Local = Private IP of the host on the inside network. Inside Global = Public IP used to represent that host on the outside (internet)."
+            },
+            {
+                category: "NAT",
+                question: "Which command is used to define the inside interface for NAT configuration?",
+                options: ["ip nat inside", "ip nat inside source", "nat inside", "ip inside nat"],
+                answer: "ip nat inside",
+                explanation: "The interface configuration command 'ip nat inside' is used to designate an interface as connected to the inside (private) network. The 'ip nat outside' command is used for the interface facing the public network."
+            },
+            {
+                category: "IPv6",
+                question: "What is the IPv6 equivalent of an IPv4 loopback address (127.0.0.1)?",
+                options: ["::1", "::", "2001::1", "FE80::1"],
+                answer: "::1",
+                explanation: "The IPv6 address '::1' is the loopback address. It is used by a node to send an IPv6 packet to itself, exactly like 127.0.0.1 is used in IPv4."
+            },
+            {
+                category: "IPv6",
+                question: "Which protocol is used in IPv6 for Stateless Address Autoconfiguration (SLAAC)?",
+                options: ["DHCPv6", "ICMPv6", "NDP", "ARP"],
+                answer: "NDP",
+                explanation: "Neighbor Discovery Protocol (NDP), which uses ICMPv6 messages, is responsible for SLAAC. It allows a host to generate its own address using a combination of a learned prefix and its MAC address (EUI-64)."
+            },
+            {
+                category: "Security",
+                question: "Which feature can be used to prevent a rogue switch from becoming the Root Bridge in your network?",
+                options: ["Port Security", "BPDU Guard", "Root Guard", "Dynamic ARP Inspection"],
+                answer: "Root Guard",
+                explanation: "Root Guard is used to enforce the root bridge placement in the network. If a port with Root Guard enabled receives a superior BPDU, it will be put into a 'root-inconsistent' (blocked) state, preventing a rogue switch from becoming the root."
+            },
+            {
+                category: "Security",
+                question: "What is the primary purpose of Dynamic ARP Inspection (DAI)?",
+                options: ["To prevent IP spoofing", "To prevent MAC address flooding", "To prevent ARP poisoning", "To prevent VLAN hopping"],
+                answer: "To prevent ARP poisoning",
+                explanation: "DAI validates ARP packets in a network. It intercepts all ARP requests and responses and checks them against a trusted database (built from DHCP snooping) before forwarding them, thus mitigating ARP poisoning (spoofing) attacks."
+            },
+            {
+                category: "WAN",
+                question: "What is a characteristic of a PPP connection?",
+                options: ["It is a non-proprietary standard", "It supports only IP", "It does not support authentication", "It is a Layer 2 protocol like Frame Relay"],
+                answer: "It is a non-proprietary standard",
+                explanation: "PPP (Point-to-Point Protocol) is an open standard (RFC 1661), unlike HDLC which is Cisco-proprietary by default. It is a data link layer protocol that can be used over various physical links and supports multiple network layer protocols and authentication (PAP, CHAP)."
+            },
+            {
+                category: "Wireless",
+                question: "What does the term 'SSID' refer to in a wireless network?",
+                options: ["The security key", "The broadcast frequency", "The network name", "The access point's MAC address"],
+                answer: "The network name",
+                explanation: "The Service Set Identifier (SSID) is the human-readable name of a wireless network that clients use to identify and connect to it."
+            },
+            {
+                category: "Network Management",
+                question: "Which protocol is used by network devices to send unsolicited messages to a network management station?",
+                options: ["SNMP Trap", "SNMP Get", "Syslog", "NetFlow"],
+                answer: "SNMP Trap",
+                explanation: "An SNMP Trap is an asynchronous notification sent from an agent (a network device) to a network management station (NMS) to alert it of a significant event, like a link failure or a reboot."
+            },
+            {
+                category: "Network Management",
+                question: "What is the primary function of Syslog?",
+                options: ["To monitor traffic flows", "To collect device performance data", "To log system messages and events", "To manage device configurations"],
+                answer: "To log system messages and events",
+                explanation: "Syslog is a standard for message logging. It allows network devices, servers, and applications to send event notification messages across an IP network to a central logging server (syslog server) for storage and analysis."
+            },
+            {
+                category: "Troubleshooting",
+                question: "You can ping a remote server by IP address but not by hostname. What is the most likely cause?",
+                options: ["A faulty NIC on the local PC", "A DNS resolution issue", "A default gateway misconfiguration", "An ACL blocking ICMP"],
+                answer: "A DNS resolution issue",
+                explanation: "The ability to ping by IP address confirms that IP connectivity exists. The failure to ping by hostname points to a failure in the process of resolving that hostname to an IP address, which is the function of DNS."
+            },
+            {
+                category: "Troubleshooting",
+                question: "What command would you use to verify the operational status of a specific interface on a router?",
+                options: ["show ip interface brief", "show running-config", "show version", "show protocols"],
+                answer: "show ip interface brief",
+                explanation: "The 'show ip interface brief' command provides a concise summary of all interfaces, including their IP address, and most importantly, their operational status (up/up, down/down, administratively down)."
+            },
+            {
+                category: "Cisco IOS",
+                question: "What is the function of the 'no shutdown' interface configuration command?",
+                options: ["It disables the interface", "It resets the interface statistics", "It enables the interface", "It clears the IP address from the interface"],
+                answer: "It enables the interface",
+                explanation: "The 'no shutdown' command administratively enables an interface, bringing it to an 'up' state. Its counterpart, the 'shutdown' command, administratively disables an interface."
+            },
+            {
+                category: "Cisco IOS",
+                question: "Which command displays information about the Cisco IOS software version, hardware, and device uptime?",
+                options: ["show running-config", "show version", "show inventory", "show flash"],
+                answer: "show version",
+                explanation: "The 'show version' command is a vital command that displays the IOS version, the system hardware information, the device uptime, the reason for the last reload, the configuration register value, and the image file."
+            },
+            {
+                category: "Miscellaneous",
+                question: "What is the purpose of the 'clock rate' command on a Cisco router?",
+                options: ["To set the system clock", "To configure NTP", "To set the speed (bandwidth) on a DCE serial interface", "To schedule a reload"],
+                answer: "To set the speed (bandwidth) on a DCE serial interface",
+                explanation: "In a back-to-back serial connection, one router must act as the DCE (Data Circuit-terminating Equipment) and provide clocking. The 'clock rate' command is used on the DCE interface's serial interface to set the speed of the link (e.g., 'clock rate 64000')."
+            },
+            {
+                category: "Miscellaneous",
+                question: "What does the term 'MTU' stand for and what does it define?",
+                options: ["Maximum Time Unit; the latency of a link", "Minimum Transmission Unit; the smallest frame size", "Maximum Transmission Unit; the largest packet size allowed", "Maximum Transfer Utility; a type of cable"],
+                answer: "Maximum Transmission Unit; the largest packet size allowed",
+                explanation: "MTU (Maximum Transmission Unit) is the maximum size of a data packet that can be transmitted without fragmentation over a network path or a specific network interface."
+            },
+            {
+                category: "OSI Model",
+                question: "Which OSI layer is responsible for establishing, managing, and terminating sessions between applications?",
+                options: ["Transport", "Session", "Presentation", "Application"],
+                answer: "Session",
+                explanation: "The Session Layer (Layer 5) is responsible for setting up, coordinating, and terminating conversations, exchanges, and dialogues between applications. It handles session and connection coordination."
+            },
+            {
+                category: "OSI Model",
+                question: "At which layer would you find TCP and UDP protocols?",
+                options: ["Network", "Transport", "Session", "Data Link"],
+                answer: "Transport",
+                explanation: "TCP and UDP are both Transport Layer (Layer 4) protocols. TCP provides connection-oriented, reliable communication, while UDP provides connectionless, best-effort delivery."
+            },
+            {
+                category: "Subnetting",
+                question: "What is the broadcast address for the host 10.150.200.30/19?",
+                options: ["10.150.223.255", "10.150.200.255", "10.150.207.255", "10.150.255.255"],
+                answer: "10.150.223.255",
+                explanation: "/19 means 19 bits for network, 13 for host. The block size in the third octet is 32 (256-224). The subnets are 10.150.0.0, 10.150.32.0, 10.150.64.0... 10.150.192.0, 10.150.224.0. Host 10.150.200.30 is in the 10.150.192.0 subnet (192-223). The broadcast is the last address before the next subnet: 10.150.223.255."
+            },
+            {
+                category: "Subnetting",
+                question: "You have a network address of 172.16.0.0/21. How many subnets can you create if you borrow 5 more bits?",
+                options: ["8", "16", "32", "64"],
+                answer: "32",
+                explanation: "The original /21 uses 21 network bits. Borrowing 5 more bits gives you /26. The number of subnets created is 2^5 (the number of borrowed bits) = 32 subnets."
+            },
+            {
+                category: "VLANs & Trunking",
+                question: "What VTP mode allows a switch to create, modify, and delete VLANs and forwards this information to other switches?",
+                options: ["Client", "Server", "Transparent", "Off"],
+                answer: "Server",
+                explanation: "VTP Server mode is the default. Switches in server mode can create, modify, and delete VLANs. These changes are advertised to other switches in the same VTP domain."
+            },
+            {
+                category: "VLANs & Trunking",
+                question: "Which command places an interface into VLAN 20?",
+                options: ["switchport access vlan 20", "vlan membership 20", "switchport mode access vlan 20", "access vlan 20"],
+                answer: "switchport access vlan 20",
+                explanation: "The command 'switchport access vlan 20' is used in interface configuration mode to assign a switch access port to a specific VLAN (in this case, VLAN 20)."
+            },
+            {
+                category: "STP",
+                question: "Which STP port type is chosen based on the lowest path cost to the Root Bridge?",
+                options: ["Root Port", "Designated Port", "Alternate Port", "Backup Port"],
+                answer: "Root Port",
+                explanation: "The Root Port is elected on every non-root bridge. It is the port with the lowest cumulative path cost to the Root Bridge. This is the best path from the switch to the root."
+            },
+            {
+                category: "STP",
+                question: "What is the purpose of Rapid PVST+?",
+                options: ["To replace STP entirely", "To provide faster convergence than traditional STP", "To eliminate the need for a Root Bridge", "To work only with wireless networks"],
+                answer: "To provide faster convergence than traditional STP",
+                explanation: "Rapid PVST+ (Per-VLAN Spanning Tree Plus) is a Cisco enhancement of STP that provides much faster convergence (often in seconds) after a network topology change compared to the 30-50 seconds of traditional 802.1D STP."
+            },
+            {
+                category: "EIGRP",
+                question: "What is the multicast address used by EIGRP for its hello packets?",
+                options: ["224.0.0.5", "224.0.0.6", "224.0.0.9", "224.0.0.10"],
+                answer: "224.0.0.10",
+                explanation: "EIGRP uses the reserved multicast address 224.0.0.10 to send Hello and Update packets to neighboring EIGRP routers. OSPF uses 224.0.0.5 and 224.0.0.6."
+            },
+            {
+                category: "EIGRP",
+                question: "What command is used to enable EIGRP for autonomous system 100 on a Cisco router?",
+                options: ["router eigrp", "router eigrp 100", "enable eigrp 100", "network eigrp 100"],
+                answer: "router eigrp 100",
+                explanation: "The global configuration command 'router eigrp 100' starts the EIGRP routing process for Autonomous System (AS) 100. The 'network' commands are then used under this process to specify which interfaces participate."
+            },
+            {
+                category: "OSPF",
+                question: "What is the OSPF network type for a standard Ethernet LAN?",
+                options: ["Point-to-Point", "Broadcast", "Non-Broadcast Multi-Access (NBMA)", "Point-to-Multipoint"],
+                answer: "Broadcast",
+                explanation: "By default, OSPF treats Ethernet multi-access networks as 'Broadcast' network type. This network type elects a Designated Router (DR) and Backup Designated Router (BDR) to optimize LSA flooding."
+            },
+            {
+                category: "OSPF",
+                question: "Which OSPF LSA type is flooded only within a single area and describes the networks within that area?",
+                options: ["Type 1 (Router LSA)", "Type 2 (Network LSA)", "Type 3 (Summary LSA)", "Type 5 (AS External LSA)"],
+                answer: "Type 1 (Router LSA)",
+                explanation: "Type 1 LSAs (Router LSAs) are generated by every OSPF router and describe the state and cost of the router's links to the area. They are flooded only within the area in which they originated."
+            },
+            {
+                category: "ACLs",
+                question: "You need to permit web traffic (HTTP) from any source to a specific host 192.168.1.10. Which is the correct extended ACL command?",
+                options: ["access-list 100 permit tcp any host 192.168.1.10 eq 80", "access-list 100 permit tcp host 192.168.1.10 eq 80 any", "access-list 100 permit ip any host 192.168.1.10", "access-list 100 permit tcp any host 192.168.1.10 eq 23"],
+                answer: "access-list 100 permit tcp any host 192.168.1.10 eq 80",
+                explanation: "The correct syntax is 'access-list [number] permit tcp [source] [destination] eq [port]'. HTTP uses port 80. 'any' represents any source, and 'host 192.168.1.10' is the specific destination."
+            },
+            {
+                category: "ACLs",
+                question: "Where should a standard ACL be placed for optimal efficiency?",
+                options: ["Close to the source of the traffic", "Close to the destination of the traffic", "On the core router", "On the WAN link"],
+                answer: "Close to the destination of the traffic",
+                explanation: "Because standard ACLs only filter based on source IP, placing them too close to the source can block all traffic from that source, even legitimate traffic to other destinations. Placing them close to the destination provides more granular control."
+            },
+            {
+                category: "NAT",
+                question: "Which command correctly defines a NAT pool named MY-POOL with addresses 203.0.113.1 to 203.0.113.5?",
+                options: ["ip nat pool MY-POOL 203.0.113.1 203.0.113.5 netmask 255.255.255.0", "ip nat pool MY-POOL 203.0.113.1 203.0.113.5 prefix-length 24", "nat pool MY-POOL 203.0.113.1 203.0.113.5 /24", "ip nat pool MY-POOL 203.0.113.1 203.0.113.5 255.255.255.248"],
+                answer: "ip nat pool MY-POOL 203.0.113.1 203.0.113.5 prefix-length 24",
+                explanation: "The correct global configuration command is 'ip nat pool [name] [start-ip] [end-ip] prefix-length [length]' or 'netmask [mask]'. A /24 prefix-length is 255.255.255.0."
+            },
+            {
+                category: "IPv6",
+                question: "What is the unique local address (ULA) range in IPv6?",
+                options: ["2000::/3", "FE80::/10", "FC00::/7", "FF00::/8"],
+                answer: "FC00::/7",
+                explanation: "Unique Local Addresses (ULA) in IPv6, defined in RFC 4193, use the prefix FC00::/7. They are the approximate IPv6 equivalent of IPv4's RFC 1918 private addresses and are not meant to be routed on the global internet."
+            },
+            {
+                category: "IPv6",
+                question: "Which IPv6 routing protocol uses SPF algorithm and is a link-state protocol like its IPv4 counterpart?",
+                options: ["RIPng", "EIGRP for IPv6", "OSPFv3", "MP-BGP"],
+                answer: "OSPFv3",
+                explanation: "OSPFv3 is the OSPF version for IPv6. It remains a link-state routing protocol that uses the Shortest Path First (SPF) algorithm, but it has been re-engineered as a network-layer-protocol-independent protocol."
+            },
+            {
+                category: "Security",
+                question: "Which command enables SSH on a Cisco device?",
+                options: ["transport input ssh", "enable ssh", "crypto key generate rsa", "ssh server enable"],
+                answer: "crypto key generate rsa",
+                explanation: "To enable the SSH server, you must first generate an RSA key pair using the command 'crypto key generate rsa'. This is the prerequisite step. You also need to set a hostname, domain-name, and use the 'transport input ssh' command on the VTY lines."
+            },
+            {
+                category: "Security",
+                question: "What is the primary purpose of DHCP Snooping?",
+                options: ["To assign IP addresses", "To prevent rogue DHCP servers", "To encrypt DHCP traffic", "To speed up DHCP requests"],
+                answer: "To prevent rogue DHCP servers",
+                explanation: "DHCP Snooping is a security feature that acts as a firewall between untrusted hosts and trusted DHCP servers. It filters DHCP messages and maintains a binding table of IP-to-MAC mappings to prevent rogue DHCP server attacks."
+            },
+            {
+                category: "Wireless",
+                question: "Which wireless security protocol is considered the most secure for modern WLANs?",
+                options: ["WEP", "WPA", "WPA2", "WPA3"],
+                answer: "WPA3",
+                explanation: "WPA3 (Wi-Fi Protected Access 3) is the latest and most secure security protocol for wireless networks. It provides stronger encryption, protects against dictionary attacks, and simplifies security for IoT devices."
+            },
+            {
+                category: "WAN",
+                question: "What is a key difference between a GRE tunnel and an IPsec VPN?",
+                options: ["GRE provides encryption by default", "IPsec can only transport IP traffic", "GRE can encapsulate multiprotocol traffic, IPsec provides security", "IPsec tunnels are simpler to configure"],
+                answer: "GRE can encapsulate multiprotocol traffic, IPsec provides security",
+                explanation: "GRE (Generic Routing Encapsulation) is a tunneling protocol that can encapsulate a wide variety of network layer protocols inside IP tunnels, but it does not provide encryption. IPsec (Internet Protocol Security) is a suite of protocols that provides security services (encryption, authentication) but is limited to IP traffic. They are often used together (GRE over IPsec)."
+            },
+            {
+                category: "Network Management",
+                question: "What NetFlow component is responsible for collecting flow data from network devices?",
+                options: ["NetFlow Exporter", "NetFlow Collector", "NetFlow Analyzer", "NetFlow Sensor"],
+                answer: "NetFlow Exporter",
+                explanation: "The NetFlow Exporter (typically a router or switch) is the network device that is configured for NetFlow. It observes network traffic, creates flow records, and exports these records to a NetFlow Collector."
+            },
+            {
+                category: "Troubleshooting",
+                question: "An interface status shows 'up/down'. What is the most likely cause?",
+                options: ["The interface is administratively shut down", "There is a Layer 1 issue (e.g., bad cable)", "There is a Layer 2 issue (e.g., protocol mismatch)", "The interface is functioning normally"],
+                answer: "There is a Layer 2 issue (e.g., protocol mismatch)",
+                explanation: "'up/down' means the Layer 1 status is up (physical connectivity is good) but the Layer 2 status is down (data link protocol is not established). Common causes include no clock rate on a serial DCE interface, encapsulation mismatch (HDLC vs. PPP), or a disabled switch port on the other end."
+            },
+            {
+                category: "Troubleshooting",
+                question: "What command would you use to view the OSPF neighbors a router has formed adjacencies with?",
+                options: ["show ip ospf", "show ip ospf database", "show ip ospf interface", "show ip ospf neighbor"],
+                answer: "show ip ospf neighbor",
+                explanation: "The 'show ip ospf neighbor' command displays the OSPF neighbor table, listing all adjacent neighbors, their state, and the interface connected to them. This is a fundamental command for OSPF troubleshooting."
+            },
+            {
+                category: "Cisco IOS",
+                question: "What is the purpose of the 'logging synchronous' command in line configuration mode?",
+                options: ["To synchronize logs with an NTP server", "To enable Syslog", "To prevent console messages from interrupting your typing", "To send debug messages to the console"],
+                answer: "To prevent console messages from interrupting your typing",
+                explanation: "The 'logging synchronous' command is used under line configuration (e.g., line con 0, line vty 0 4). It tells the IOS to redisplay the command prompt and any partially typed command after a log message is displayed, preventing messages from disrupting your input."
+            },
+            {
+                category: "Cisco IOS",
+                question: "Which command displays the status of all VLANs configured on a switch?",
+                options: ["show vlan", "show vlan brief", "show interfaces vlan", "show running-config | section vlan"],
+                answer: "show vlan brief",
+                explanation: "The 'show vlan brief' command provides a concise summary of all VLANs, their names, status, and the switch ports assigned to them. It's the quickest way to get an overview of the VLAN configuration."
+            },
+            {
+                category: "Miscellaneous",
+                question: "What is the purpose of the 'ip default-gateway' command on a Layer 2 switch?",
+                options: ["To route between VLANs", "To allow the switch to be managed from a remote network", "To set the next-hop for all switch traffic", "To assign an IP address to the switch"],
+                answer: "To allow the switch to be managed from a remote network",
+                explanation: "A Layer 2 switch uses the 'ip default-gateway' command to define the default gateway (router) for the switch itself. This allows Telnet, SSH, or SNMP traffic from the switch to reach networks outside its local IP subnet for remote management."
+            },
+            {
+                category: "Miscellaneous",
+                question: "What does a 'D' in the routing table indicate in a Cisco router?",
+                options: ["Directly connected network", "Statically configured route", "Route learned via EIGRP", "Route learned via OSPF"],
+                answer: "Route learned via EIGRP",
+                explanation: "In a Cisco 'show ip route' output, the code letter indicates the source of the route. 'D' stands for EIGRP. 'C' is connected, 'S' is static, 'O' is OSPF, and 'R' is RIP."
+            },
+            {
+                category: "Miscellaneous",
+                question: "What is the primary function of HSRP?",
+                options: ["To load balance traffic across multiple routers", "To provide a virtual default gateway for hosts", "To encrypt traffic between routers", "To tunnel IP traffic"],
+                answer: "To provide a virtual default gateway for hosts",
+                explanation: "HSRP (Hot Standby Router Protocol) is a Cisco proprietary protocol that provides a virtual IP address and MAC address for a group of routers. This creates a 'virtual' default gateway, providing redundancy in case the active router fails."
+            },
+            {
+                category: "Miscellaneous",
+                question: "What command is used to view the MAC addresses learned on a specific switch interface?",
+                options: ["show mac address-table interface [interface-id]", "show interface [interface-id] mac", "show mac-address [interface-id]", "show mac table interface [interface-id]"],
+                answer: "show mac address-table interface [interface-id]",
+                explanation: "The command 'show mac address-table interface [interface-id]' (e.g., 'show mac address-table interface gi0/1') displays all the MAC addresses that have been learned on that specific switch port."
+            },
+            {
+                category: "Miscellaneous",
+                question: "What is the first step in the router boot process?",
+                options: ["Load the IOS", "Load the startup-config", "Perform POST", "Find the bootstrap"],
+                answer: "Perform POST",
+                explanation: "The first step any Cisco router (or computer) takes when powering on is to perform the Power-On Self-Test (POST). POST tests the hardware to verify all components are functional."
+            },
+            {
+                category: "Miscellaneous",
+                question: "What is the purpose of the configuration register value 0x2102?",
+                options: ["To boot into ROMmon mode", "To ignore the startup-config", "To perform a normal boot from flash", "To recover a lost password"],
+                answer: "To perform a normal boot from flash",
+                explanation: "The default configuration register value is 0x2102. This setting tells the router to load the IOS from flash memory and then load the startup-config from NVRAM—the standard boot process."
+            },
+            {
+                category: "Miscellaneous",
+                question: "Which protocol uses a hop count limit of 15 by default?",
+                options: ["OSPF", "EIGRP", "RIP", "BGP"],
+                answer: "RIP",
+                explanation: "RIP (Routing Information Protocol) uses hop count as its metric and has a maximum hop count of 15. A route with 16 hops is considered unreachable, which limits the size of networks where RIP can be used."
+            },
+            {
+                category: "Miscellaneous",
+                question: "What is the primary purpose of CDP (Cisco Discovery Protocol)?",
+                options: ["To route packets", "To discover directly connected Cisco devices", "To prevent loops", "To assign IP addresses"],
+                answer: "To discover directly connected Cisco devices",
+                explanation: "CDP is a Cisco proprietary Layer 2 protocol used to discover information about directly connected Cisco devices, such as device type, IP address, and capabilities, without needing IP connectivity."
+            }
+        ];
+
+        // ====================================================================
+        // === QUIZ LOGIC (Updated)
+        // ====================================================================
+
+        // DOM Element References
+        const filtersContainer = document.getElementById("category-filters");
+        const questionEl = document.getElementById("question-text");
+        const optionsEl = document.getElementById("answer-options");
+        const feedbackEl = document.getElementById("feedback");
+        const nextBtn = document.getElementById("next-btn");
+        const quizContentEl = document.getElementById("quiz-content");
+
+        let currentQuestion = null;
+
+        /**
+         * Initializes the quiz: populates filters and loads the first question.
+         */
+        function initQuiz() {
+            populateCategoryFilters();
+            loadQuestion();
+
+            // Add event listeners
+            nextBtn.addEventListener("click", loadQuestion);
+            optionsEl.addEventListener("click", handleAnswerClick);
+            filtersContainer.addEventListener("change", handleFilterChange);
+        }
+
+        /**
+         * Creates category checkboxes from the question database.
+         */
+        function populateCategoryFilters() {
+            const categories = [
+                ...new Set(questionDatabase.map((q) => q.category)),
+            ];
+            categories.sort();
+
+            categories.forEach((category) => {
+                const li = document.createElement("li");
+                li.innerHTML = `
+                    <label>
+                        <input type="checkbox" value="${category}" checked>
+                        ${category}
+                    </label>
+                `;
+                filtersContainer.appendChild(li);
+            });
+        }
+
+        /**
+         * Loads a new random question based on selected filters.
+         * ** UPDATED: Uses .innerHTML = "" for feedbackEl
+         */
+        function loadQuestion() {
+            // 1. Reset the UI
+            feedbackEl.innerHTML = ""; // <-- UPDATED from textContent
+            feedbackEl.className = "";
+            nextBtn.style.display = "none";
+            optionsEl.innerHTML = ""; 
+
+            // 2. Get enabled categories
+            const enabledCategories = [
+                ...filtersContainer.querySelectorAll("input:checked"),
+            ].map((input) => input.value);
+
+            // 3. Filter questions
+            const availableQuestions = questionDatabase.filter((q) =>
+                enabledCategories.includes(q.category)
+            );
+
+            // 4. Check if any questions are available
+            if (availableQuestions.length === 0) {
+                questionEl.textContent =
+                    "No questions available. Please select at least one category.";
+                quizContentEl.style.display = "block";
+                return;
+            }
+
+            quizContentEl.style.display = "block";
+
+            // 5. Pick a random question
+            const questionIndex = Math.floor(Math.random() * availableQuestions.length);
+            currentQuestion = availableQuestions[questionIndex];
+
+            // 6. Display the question
+            questionEl.textContent = currentQuestion.question;
+
+            // 7. Shuffle and display answer options
+            const shuffledOptions = [...currentQuestion.options].sort(
+                () => Math.random() - 0.5
+            );
+
+            shuffledOptions.forEach((option) => {
+                const button = document.createElement("button");
+                button.textContent = option;
+                button.className = "answer-btn";
+                optionsEl.appendChild(button);
+            });
+        }
+
+        /**
+         * Handles the user clicking an answer button.
+         * ** UPDATED: Now shows the explanation for both correct and incorrect answers.
+         */
+        function handleAnswerClick(event) {
+            // Use event delegation
+            if (!event.target.classList.contains("answer-btn")) {
+                return;
+            }
+
+            const selectedAnswer = event.target.textContent;
+            const correctAnswer = currentQuestion.answer;
+            const explanation = currentQuestion.explanation;
+
+            // Disable all buttons
+            const allButtons = optionsEl.querySelectorAll(".answer-btn");
+            allButtons.forEach((btn) => {
+                btn.disabled = true;
+                // Highlight the correct answer
+                if (btn.textContent === correctAnswer) {
+                    btn.classList.add("correct-choice");
+                }
+            });
+
+            // Provide feedback
+            if (selectedAnswer === correctAnswer) {
+                feedbackEl.innerHTML = `<strong>Correct!</strong>
+                                        <br><br>${explanation}`;
+                feedbackEl.className = "correct";
+            } else {
+                feedbackEl.innerHTML = `<strong>Incorrect.</strong> The correct answer was: ${correctAnswer}.
+                                        <br><br><strong>Explanation:</strong> ${explanation}`;
+                feedbackEl.className = "incorrect";
+                event.target.classList.add("incorrect-choice"); // Highlight the user's wrong choice
+            }
+
+            // Show 'Next' button
+            nextBtn.style.display = "block";
+        }
+
+        /**
+         * Reloads a question if filters change.
+         */
+        function handleFilterChange() {
+            loadQuestion();
+        }
+
+        // Start the quiz once the DOM is loaded
+        document.addEventListener("DOMContentLoaded", initQuiz);
+    </script>
+
+</body>
+</html>
